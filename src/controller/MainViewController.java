@@ -41,12 +41,12 @@ public class MainViewController implements Initializable {
 
     @FXML
     private void handleMenuItemDepartment(ActionEvent event) {
+        loadView("../view/DepartmentList.fxml", (DepartmentListController controller) -> {});
     }
 
     @FXML
     private void handleMenuItemAbout(ActionEvent event) {
-        loadView("../view/AboutView.fxml", x -> {
-        });
+        loadView("../view/AboutView.fxml", x -> {});
     }
 
     private synchronized <T> void loadView(String absoluteName, Consumer<T> initializingAction) {
