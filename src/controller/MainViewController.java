@@ -13,7 +13,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import main.Main;
 import util.AlertDialog;
@@ -24,13 +23,9 @@ import util.AlertDialog;
  * @author joana
  */
 public class MainViewController implements Initializable {
-
-    @FXML
-    private MenuItem menuItemSeller;
-    @FXML
-    private MenuItem menuItemDepartment;
-    @FXML
-    private MenuItem menuItemAbout;
+    @FXML private MenuItem menuItemSeller;
+    @FXML private MenuItem menuItemDepartment;
+    @FXML private MenuItem menuItemAbout;
 
     /**
      * Initializes the controller class.
