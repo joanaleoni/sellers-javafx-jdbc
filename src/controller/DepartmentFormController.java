@@ -1,10 +1,13 @@
 package controller;
 
 import exception.DatabaseException;
+import exception.ValidationException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -71,9 +74,11 @@ public class DepartmentFormController implements Initializable {
             service.saveOrUpdate(department);
             notifyDataChangeListeners();
             Utils.currentStage(event).close();
+        } catch(ValidationException e){
+            setErrorMessages(e.getErrors());
         } catch(DatabaseException e){
             AlertDialog.showAlert("Error saving object", null, e.getMessage(), Alert.AlertType.ERROR);
-        }
+        } 
     }
 
     @FXML
@@ -91,14 +96,36 @@ public class DepartmentFormController implements Initializable {
 
     private Department getFormData() {
         Department dep = new Department();
+        
+        ValidationException exception = new ValidationException("Validation error");
+        
         dep.setId(Utils.tryParseToInt(txtId.getText()));
+        
+        if (!nameIsValid(txtName)){
+            exception.addError("name", "Field can't be empty");
+        }
         dep.setName(txtName.getText());
+        
+        if(exception.getErrors().size() > 0){
+            throw exception;
+        }
         return dep;
+    }
+    
+    private boolean nameIsValid(TextField txtName){
+        return !(txtName.getText() == null) && !(txtName.getText().trim().equals(""));
     }
     
     private void notifyDataChangeListeners(){
         for (DataChangeListener listener : dataChangeListeners){
             listener.onDataChanged();
+        }
+    }
+    
+    private void setErrorMessages(Map<String, String> errors){
+        Set<String> fields = errors.keySet();        
+        if(fields.contains("name")){
+            labelErrorName.setText(errors.get("name"));
         }
     }
 }
