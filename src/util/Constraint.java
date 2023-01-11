@@ -23,6 +23,14 @@ public class Constraint {
             }
         });
     }
+    
+    public static void setTextFieldMinLength(TextField txt, int min) {
+        txt.textProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue != null && newValue.length() < min) {
+                txt.setText(oldValue);
+            }
+        });
+    }
 
     public static void setTextFieldDouble(TextField txt) {
         txt.textProperty().addListener((obs, oldValue, newValue) -> {

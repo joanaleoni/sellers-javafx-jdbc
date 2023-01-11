@@ -5,7 +5,6 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 /**
@@ -13,7 +12,7 @@ import javafx.stage.Stage;
  * @author joana
  */
 public class Main extends Application {
-    
+
     private static Scene mainScene;
 
     @Override
@@ -27,8 +26,7 @@ public class Main extends Application {
 
             mainScene = new Scene(scrollPane);
             primaryStage.setScene(mainScene);
-            primaryStage.setTitle("JavaFX application");
-            primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("../icon/icon.png")));
+            primaryStage.setTitle("Sample JavaFX application");
             primaryStage.show();
         } catch (IOException e) {
             e.printStackTrace();
@@ -39,9 +37,6 @@ public class Main extends Application {
         return mainScene;
     }
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
         launch(args);
     }

@@ -1,48 +1,51 @@
 package controller;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import main.Main;
 import model.domain.Department;
 import model.service.DepartmentService;
+import util.AlertDialog;
+import util.Utils;
 
 /**
  * FXML Controller class
  *
  * @author joana
  */
-public class DepartmentListController  implements Initializable {
+public class DepartmentListController implements Initializable {
     @FXML private TableView<Department> tableViewDepartment;
     @FXML private TableColumn<Department, Integer> tableColumnId;
     @FXML private TableColumn<Department, String> tableColumnName;
     @FXML private Button btNew;
 
     private DepartmentService service;
-    private List<Department> listDepartments;
     private ObservableList<Department> observableListDepartments;
-    
-    public void setDepartmentService(DepartmentService service){
+
+    public void setDepartmentService(DepartmentService service) {
         this.service = service;
     }
-    
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         initializeNodes();
-    }
-    
-    @FXML
-    public void handleBtNew() {
-        System.out.println("handleBtNewAction");
     }
 
     private void initializeNodes() {
@@ -53,13 +56,40 @@ public class DepartmentListController  implements Initializable {
         tableViewDepartment.prefHeightProperty().bind(stage.heightProperty());
     }
     
-    public void updataTableView(){
-        if(service == null){
+    @FXML
+    public void handleBtNew(ActionEvent event) {
+        Stage parentStage = Utils.currentStage(event);
+        Department dep = new Department();
+        createDialogForm(dep, "../view/DepartmentForm.fxml", parentStage);
+    }
+
+    public void updateTableView() {
+        if (service == null) {
             throw new IllegalStateException("Service was null");
         }
-        
-        listDepartments = service.findAll();
+        List<Department> listDepartments = service.findAll();
         observableListDepartments = FXCollections.observableArrayList(listDepartments);
         tableViewDepartment.setItems(observableListDepartments);
+    }
+
+    private void createDialogForm(Department department, String absoluteName, Stage parentStage) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
+            Pane pane = loader.load();
+
+            DepartmentFormController controller = loader.getController();
+            controller.setDepartment(department);
+            controller.updateFormData();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Enter Department data");
+            dialogStage.setScene(new Scene(pane));
+            dialogStage.setResizable(false);
+            dialogStage.initOwner(parentStage);
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.showAndWait();
+        } catch (IOException e) {
+            AlertDialog.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
+        }
     }
 }

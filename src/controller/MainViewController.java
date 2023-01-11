@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -28,29 +27,27 @@ public class MainViewController implements Initializable {
     @FXML private MenuItem menuItemDepartment;
     @FXML private MenuItem menuItemAbout;
 
-    /**
-     * Initializes the controller class.
-     */
-    @Override
-    public void initialize(URL url, ResourceBundle rb) {
-        
+    @FXML
+    public void handleMenuItemSeller() {
+        System.out.println("onMenuItemSellerAction");
     }
 
     @FXML
-    private void handleMenuItemSeller(ActionEvent event) {
-    }
-
-    @FXML
-    private void handleMenuItemDepartment(ActionEvent event) {
+    public void handleMenuItemDepartment() {
         loadView("../view/DepartmentList.fxml", (DepartmentListController controller) -> {
-                controller.setDepartmentService(new DepartmentService());
-                controller.updataTableView();
+            controller.setDepartmentService(new DepartmentService());
+            controller.updateTableView();
         });
     }
 
     @FXML
-    private void handleMenuItemAbout(ActionEvent event) {
-        loadView("../view/AboutView.fxml", x -> {});
+    public void handleMenuItemAbout() {
+        loadView("../view/AboutView.fxml", x -> {
+        });
+    }
+
+    @Override
+    public void initialize(URL uri, ResourceBundle rb) {
     }
 
     private synchronized <T> void loadView(String absoluteName, Consumer<T> initializingAction) {
