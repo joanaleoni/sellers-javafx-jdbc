@@ -70,7 +70,7 @@ public class SellerFormController implements Initializable {
         this.departmentService = departmentService;
     }
     
-    public void subscriceDataChangeListener(DataChangeListener listener){
+    public void subscribeDataChangeListener(DataChangeListener listener){
         dataChangeListeners.add(listener);
     }
 
