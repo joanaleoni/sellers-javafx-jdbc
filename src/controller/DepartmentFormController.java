@@ -1,14 +1,20 @@
 package controller;
 
+import exception.DatabaseException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import model.domain.Department;
+import model.service.DepartmentService;
+import util.AlertDialog;
 import util.Constraint;
+import util.Utils;
 
 /**
  * FXML Controller class
@@ -23,9 +29,14 @@ public class DepartmentFormController implements Initializable {
     @FXML private Button btCancel;
     
     private Department department;
+    private DepartmentService service;
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+    
+    public void setDepartmentService(DepartmentService service) {
+        this.service = service;
     }
 
     @Override
@@ -39,13 +50,26 @@ public class DepartmentFormController implements Initializable {
     }
     
     @FXML
-    public void handleBtSave() {
-        System.out.println("handleBtSave");
+    public void handleBtSave(ActionEvent event) {
+        if(department == null) {
+            throw new IllegalStateException("Entity was null");
+        }
+        if(service == null) {
+            throw new IllegalStateException("Service was null");
+        }
+        
+        try {
+            department = getFormData();
+            service.saveOrUpdate(department);
+            Utils.currentStage(event).close();
+        } catch(DatabaseException e){
+            AlertDialog.showAlert("Error saving object", null, e.getMessage(), Alert.AlertType.ERROR);
+        }
     }
 
     @FXML
-    public void handleBtCancel() {
-        System.out.println("handleBtCancel");
+    public void handleBtCancel(ActionEvent event) {
+        Utils.currentStage(event).close();
     }
 
     public void updateFormData() {
@@ -54,5 +78,12 @@ public class DepartmentFormController implements Initializable {
         }
         txtId.setText(String.valueOf(department.getId()));
         txtName.setText(department.getName());
+    }
+
+    private Department getFormData() {
+        Department dep = new Department();
+        dep.setId(Utils.tryParseToInt(txtId.getText()));
+        dep.setName(txtName.getText());
+        return dep;
     }
 }
