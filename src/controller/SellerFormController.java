@@ -3,6 +3,7 @@ package controller;
 import exception.DatabaseException;
 import exception.ValidationException;
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.Date;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -153,10 +155,29 @@ public class SellerFormController implements Initializable {
         
         seller.setId(Utils.tryParseToInt(txtId.getText()));
         
-        if (!nameIsValid(txtName)){
-            exception.addError("name", "Field can't be empty");
+        if (!fieldIsValid(txtName)){
+            exception.addError("name", "Field name can't be empty");
         }
         seller.setName(txtName.getText());
+        
+        if (!fieldIsValid(txtEmail)){
+            exception.addError("email", "Field email can't be empty");
+        }
+        seller.setEmail(txtEmail.getText());
+        
+        if(dpBirthDate.getValue() == null) {
+            exception.addError("birthDate", "Field birth date can't be empty");
+        } else {
+            Instant instant = Instant.from(dpBirthDate.getValue().atStartOfDay(ZoneId.systemDefault()));
+            seller.setBirthDate(Date.from(instant));
+        }
+        
+        if (!fieldIsValid(txtBaseSalary)){
+            exception.addError("baseSalary", "Field base salary can't be empty");
+        }
+        seller.setBaseSalary(Utils.tryParseToDouble(txtBaseSalary.getText()));
+        
+        seller.setDepartment(cbDepartments.getValue());
         
         if(exception.getErrors().size() > 0){
             throw exception;
@@ -164,8 +185,8 @@ public class SellerFormController implements Initializable {
         return seller;
     }
     
-    private boolean nameIsValid(TextField txtName){
-        return !(txtName.getText() == null) && !(txtName.getText().trim().equals(""));
+    private boolean fieldIsValid(TextField textField){
+        return !(textField.getText() == null) && !(textField.getText().trim().equals(""));
     }
     
     private void notifyDataChangeListeners(){
@@ -185,8 +206,10 @@ public class SellerFormController implements Initializable {
     
     private void setErrorMessages(Map<String, String> errors){
         Set<String> fields = errors.keySet();        
-        if(fields.contains("name")){
-            labelErrorName.setText(errors.get("name"));
-        }
+
+        labelErrorName.setText((fields.contains("name") ? errors.get("name") : ""));
+        labelErrorEmail.setText((fields.contains("email") ? errors.get("email") : ""));
+        labelErrorBaseSalary.setText((fields.contains("baseSalary") ? errors.get("baseSalary") : ""));
+        labelErrorBirthDate.setText((fields.contains("birthDate") ? errors.get("birthDate") : ""));
     }
 }
