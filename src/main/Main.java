@@ -1,5 +1,6 @@
 package main;
 
+import javafx.scene.image.Image;
 import java.io.IOException;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -27,6 +28,7 @@ public class Main extends Application {
             mainScene = new Scene(scrollPane);
             primaryStage.setScene(mainScene);
             primaryStage.setTitle("Sample JavaFX application");
+            primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("../icon/icon.png")));
             primaryStage.show();
         } catch (IOException e) {
             e.printStackTrace();

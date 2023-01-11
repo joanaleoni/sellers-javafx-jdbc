@@ -56,17 +56,17 @@ public class SellerFormController implements Initializable {
     @FXML private Button btCancel;
     
     private Seller seller;
-    private SellerService service;
+    private SellerService sellerService;
     private DepartmentService departmentService;
-    private List<DataChangeListener> dataChangeListeners = new ArrayList<>();
     private ObservableList<Department> observableListDepartments;
+    private List<DataChangeListener> dataChangeListeners = new ArrayList<>();
 
     public void setSeller(Seller seller) {
         this.seller = seller;
     }
     
-    public void setServices(SellerService service, DepartmentService departmentService) {
-        this.service = service;
+    public void setServices(SellerService sellerService, DepartmentService departmentService) {
+        this.sellerService = sellerService;
         this.departmentService = departmentService;
     }
     
@@ -106,13 +106,13 @@ public class SellerFormController implements Initializable {
         if(seller == null) {
             throw new IllegalStateException("Entity was null");
         }
-        if(service == null) {
+        if(sellerService == null) {
             throw new IllegalStateException("Service was null");
         }
         
         try {
             seller = getFormData();
-            service.saveOrUpdate(seller);
+            sellerService.saveOrUpdate(seller);
             notifyDataChangeListeners();
             Utils.currentStage(event).close();
         } catch(ValidationException e){
@@ -121,10 +121,57 @@ public class SellerFormController implements Initializable {
             AlertDialog.showAlert("Error saving object", null, e.getMessage(), Alert.AlertType.ERROR);
         } 
     }
-
-    @FXML
-    public void handleBtCancel(ActionEvent event) {
-        Utils.currentStage(event).close();
+    
+    private Seller getFormData() {
+        Seller seller = new Seller();        
+        seller.setId(Utils.tryParseToInt(txtId.getText()));
+        
+        if(fieldsAreValid()){
+            seller.setName(txtName.getText());
+            seller.setEmail(txtEmail.getText());
+            Instant instant = Instant.from(dpBirthDate.getValue().atStartOfDay(ZoneId.systemDefault()));
+            seller.setBirthDate(Date.from(instant));
+            seller.setBaseSalary(Utils.tryParseToDouble(txtBaseSalary.getText()));
+            seller.setDepartment(cbDepartments.getValue()); 
+        }
+        
+        return seller;
+    }
+       
+    private boolean fieldsAreValid(){
+        ValidationException exception = new ValidationException("Validation error");
+        
+        if (!fieldIsValid(txtName)){
+            exception.addError("name", "Field name can't be empty");
+        }
+        
+        if (!fieldIsValid(txtEmail)){
+            exception.addError("email", "Field email can't be empty");
+        }
+         
+        if(dpBirthDate.getValue() == null) {
+            exception.addError("birthDate", "Field birth date can't be empty");
+         }
+         
+        if (!fieldIsValid(txtBaseSalary)){
+            exception.addError("baseSalary", "Field base salary can't be empty");
+        }
+        
+        if(exception.getErrors().size() > 0){
+            throw exception;
+        } 
+        
+        return true;
+    }
+    
+    private boolean fieldIsValid(TextField textField){
+        return !(textField.getText() == null) && !(textField.getText().trim().equals(""));
+    }
+    
+    private void notifyDataChangeListeners(){
+        for (DataChangeListener listener : dataChangeListeners){
+            listener.onDataChanged();
+        }
     }
 
     public void updateFormData() {
@@ -147,52 +194,19 @@ public class SellerFormController implements Initializable {
             cbDepartments.setValue(seller.getDepartment());
         }        
     }
+    
+    private void setErrorMessages(Map<String, String> errors){
+        Set<String> fields = errors.keySet();        
 
-    private Seller getFormData() {
-        Seller seller = new Seller();
-        
-        ValidationException exception = new ValidationException("Validation error");
-        
-        seller.setId(Utils.tryParseToInt(txtId.getText()));
-        
-        if (!fieldIsValid(txtName)){
-            exception.addError("name", "Field name can't be empty");
-        }
-        seller.setName(txtName.getText());
-        
-        if (!fieldIsValid(txtEmail)){
-            exception.addError("email", "Field email can't be empty");
-        }
-        seller.setEmail(txtEmail.getText());
-        
-        if(dpBirthDate.getValue() == null) {
-            exception.addError("birthDate", "Field birth date can't be empty");
-        } else {
-            Instant instant = Instant.from(dpBirthDate.getValue().atStartOfDay(ZoneId.systemDefault()));
-            seller.setBirthDate(Date.from(instant));
-        }
-        
-        if (!fieldIsValid(txtBaseSalary)){
-            exception.addError("baseSalary", "Field base salary can't be empty");
-        }
-        seller.setBaseSalary(Utils.tryParseToDouble(txtBaseSalary.getText()));
-        
-        seller.setDepartment(cbDepartments.getValue());
-        
-        if(exception.getErrors().size() > 0){
-            throw exception;
-        }
-        return seller;
+        labelErrorName.setText((fields.contains("name") ? errors.get("name") : ""));
+        labelErrorEmail.setText((fields.contains("email") ? errors.get("email") : ""));
+        labelErrorBaseSalary.setText((fields.contains("baseSalary") ? errors.get("baseSalary") : ""));
+        labelErrorBirthDate.setText((fields.contains("birthDate") ? errors.get("birthDate") : ""));
     }
     
-    private boolean fieldIsValid(TextField textField){
-        return !(textField.getText() == null) && !(textField.getText().trim().equals(""));
-    }
-    
-    private void notifyDataChangeListeners(){
-        for (DataChangeListener listener : dataChangeListeners){
-            listener.onDataChanged();
-        }
+    @FXML
+    public void handleBtCancel(ActionEvent event) {
+        Utils.currentStage(event).close();
     }
     
     public void loadAssociatedDepartments(){
@@ -202,14 +216,5 @@ public class SellerFormController implements Initializable {
         List<Department> listDepartments = departmentService.findAll();
         observableListDepartments = FXCollections.observableArrayList(listDepartments);
         cbDepartments.setItems(observableListDepartments);
-    }
-    
-    private void setErrorMessages(Map<String, String> errors){
-        Set<String> fields = errors.keySet();        
-
-        labelErrorName.setText((fields.contains("name") ? errors.get("name") : ""));
-        labelErrorEmail.setText((fields.contains("email") ? errors.get("email") : ""));
-        labelErrorBaseSalary.setText((fields.contains("baseSalary") ? errors.get("baseSalary") : ""));
-        labelErrorBirthDate.setText((fields.contains("birthDate") ? errors.get("birthDate") : ""));
     }
 }

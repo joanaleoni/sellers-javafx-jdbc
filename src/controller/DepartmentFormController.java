@@ -80,29 +80,15 @@ public class DepartmentFormController implements Initializable {
             AlertDialog.showAlert("Error saving object", null, e.getMessage(), Alert.AlertType.ERROR);
         } 
     }
-
-    @FXML
-    public void handleBtCancel(ActionEvent event) {
-        Utils.currentStage(event).close();
-    }
-
-    public void updateFormData() {
-        if (department == null) {
-            throw new IllegalStateException("Entity was null");
-        }
-        txtId.setText(String.valueOf(department.getId()));
-        txtName.setText(department.getName());
-    }
-
+    
     private Department getFormData() {
-        Department dep = new Department();
-        
+        Department dep = new Department();        
         ValidationException exception = new ValidationException("Validation error");
         
         dep.setId(Utils.tryParseToInt(txtId.getText()));
         
         if (!nameIsValid(txtName)){
-            exception.addError("name", "Field can't be empty");
+            exception.addError("name", "Field name can't be empty");
         }
         dep.setName(txtName.getText());
         
@@ -123,9 +109,22 @@ public class DepartmentFormController implements Initializable {
     }
     
     private void setErrorMessages(Map<String, String> errors){
-        Set<String> fields = errors.keySet();        
+        Set<String> fields = errors.keySet();
         if(fields.contains("name")){
             labelErrorName.setText(errors.get("name"));
         }
+    }
+
+    @FXML
+    public void handleBtCancel(ActionEvent event) {
+        Utils.currentStage(event).close();
+    }
+
+    public void updateFormData() {
+        if (department == null) {
+            throw new IllegalStateException("Entity was null");
+        }
+        txtId.setText(String.valueOf(department.getId()));
+        txtName.setText(department.getName());
     }
 }

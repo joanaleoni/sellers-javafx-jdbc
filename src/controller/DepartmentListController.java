@@ -70,7 +70,66 @@ public class DepartmentListController implements Initializable, DataChangeListen
         Department dep = new Department();
         createDialogForm(dep, "../view/DepartmentForm.fxml", parentStage);
     }
+    
+    private void createDialogForm(Department department, String absoluteName, Stage parentStage) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
+            Pane pane = loader.load();
 
+            DepartmentFormController controller = setDepartmentFormController(loader, department);     
+            controller.subscriceDataChangeListener(this);  
+            controller.updateFormData();
+            
+            Stage dialogStage = setDialogStage(pane);  
+            dialogStage.initOwner(parentStage);
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+            AlertDialog.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
+        }
+    }
+    
+    private DepartmentFormController setDepartmentFormController(FXMLLoader loader, Department department){
+        DepartmentFormController controller = loader.getController();
+        
+        controller.setDepartment(department);
+        controller.setDepartmentService(new DepartmentService());
+        
+        return controller;
+    }
+    
+    private Stage setDialogStage(Pane pane){
+        Stage dialogStage = new Stage();
+        
+        dialogStage.setTitle("Enter Department data");
+        dialogStage.setScene(new Scene(pane));
+        dialogStage.setResizable(false);
+                
+        return dialogStage;
+    }
+    
+    private void removeEntity(Department department){
+        Optional<ButtonType> result = AlertDialog.showConfirmation("Confirmation", "Are you sure to delete?");
+        
+        if(btConfirmClicked(result)){
+            if(service == null){
+                throw new IllegalStateException("Service was null");
+            }
+            
+            try {
+                service.remove(department);
+                updateTableView();
+            } catch(DatabaseIntegrityException e){
+                AlertDialog.showAlert("Error removing department", null, e.getMessage(), AlertType.ERROR);
+            }
+        }
+    }
+    
+    private boolean btConfirmClicked(Optional<ButtonType> button){
+        return button.get() == ButtonType.OK;
+    }
+            
     public void updateTableView() {
         if (service == null) {
             throw new IllegalStateException("Service was null");
@@ -102,31 +161,6 @@ public class DepartmentListController implements Initializable, DataChangeListen
                 obj, "../view/DepartmentForm.fxml",Utils.currentStage(event)));
                 }
             });
-    } 
-
-
-    private void createDialogForm(Department department, String absoluteName, Stage parentStage) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
-            Pane pane = loader.load();
-
-            DepartmentFormController controller = loader.getController();
-            controller.setDepartment(department);
-            controller.setDepartmentService(new DepartmentService());
-            controller.subscriceDataChangeListener(this);
-            controller.updateFormData();
-
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle("Enter Department data");
-            dialogStage.setScene(new Scene(pane));
-            dialogStage.setResizable(false);
-            dialogStage.initOwner(parentStage);
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.showAndWait();
-        } catch (IOException e) {
-            e.printStackTrace();
-            AlertDialog.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
-        }
     }
     
     private void initRemoveButtons() {
@@ -149,23 +183,6 @@ public class DepartmentListController implements Initializable, DataChangeListen
         });
     }
     
-    private void removeEntity(Department department){
-        Optional<ButtonType> result = AlertDialog.showConfirmation("Confirmation", "Are you sure to delete?");
-        
-        if(result.get() == ButtonType.OK){
-            if(service == null){
-                throw new IllegalStateException("Service was null");
-            }
-            
-            try {
-                service.remove(department);
-                updateTableView();
-            } catch(DatabaseIntegrityException e){
-                AlertDialog.showAlert("Error removing department", null, e.getMessage(), AlertType.ERROR);
-            }
-        }
-    }
-
     @Override
     public void onDataChanged() {
         updateTableView();

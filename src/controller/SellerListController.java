@@ -81,7 +81,63 @@ public class SellerListController implements Initializable, DataChangeListener {
         Seller seller = new Seller();
         createDialogForm(seller, "../view/SellerForm.fxml", parentStage);
     }
+    
+    private void createDialogForm(Seller seller, String absoluteName, Stage parentStage) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
+            Pane pane = loader.load();
 
+            SellerFormController controller = setSellerFormController(loader, seller);
+            controller.loadAssociatedDepartments();
+            controller.subscriceDataChangeListener(this);
+            controller.updateFormData();
+
+            Stage dialogStage = setDialogStage(pane);
+            dialogStage.initOwner(parentStage);
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+            AlertDialog.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
+        }
+    }
+    
+    private SellerFormController setSellerFormController(FXMLLoader loader, Seller seller) {
+        SellerFormController controller = loader.getController();        
+        controller.setSeller(seller);
+        controller.setServices(new SellerService(), new DepartmentService());
+        return controller;
+    }
+    
+    private Stage setDialogStage(Pane pane) {
+        Stage dialogStage = new Stage();        
+        dialogStage.setTitle("Enter Seller data");
+        dialogStage.setScene(new Scene(pane));
+        dialogStage.setResizable(false);
+        return dialogStage;
+    }
+    
+    private void removeEntity(Seller seller){
+        Optional<ButtonType> result = AlertDialog.showConfirmation("Confirmation", "Are you sure to delete?");
+        
+        if(btConfirmClicked(result)){
+            if(service == null){
+                throw new IllegalStateException("Service was null");
+            }
+            
+            try {
+                service.remove(seller);
+                updateTableView();
+            } catch(DatabaseIntegrityException e){
+                AlertDialog.showAlert("Error removing seller", null, e.getMessage(), AlertType.ERROR);
+            }
+        }
+    }
+    
+    private boolean btConfirmClicked(Optional<ButtonType> button){
+        return button.get() == ButtonType.OK;
+    }
+      
     public void updateTableView() {
         if (service == null) {
             throw new IllegalStateException("Service was null");
@@ -114,32 +170,6 @@ public class SellerListController implements Initializable, DataChangeListener {
                 }
             });
     } 
-
-
-    private void createDialogForm(Seller seller, String absoluteName, Stage parentStage) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
-            Pane pane = loader.load();
-
-            SellerFormController controller = loader.getController();
-            controller.setSeller(seller);
-            controller.setServices(new SellerService(), new DepartmentService());
-            controller.loadAssociatedDepartments();
-            controller.subscriceDataChangeListener(this);
-            controller.updateFormData();
-
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle("Enter Seller data");
-            dialogStage.setScene(new Scene(pane));
-            dialogStage.setResizable(false);
-            dialogStage.initOwner(parentStage);
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.showAndWait();
-        } catch (IOException e) {
-            e.printStackTrace();
-            AlertDialog.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
-        }
-    }
     
     private void initRemoveButtons() {
         tableColumnREMOVE.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
@@ -161,23 +191,6 @@ public class SellerListController implements Initializable, DataChangeListener {
         });
     }
     
-    private void removeEntity(Seller seller){
-        Optional<ButtonType> result = AlertDialog.showConfirmation("Confirmation", "Are you sure to delete?");
-        
-        if(result.get() == ButtonType.OK){
-            if(service == null){
-                throw new IllegalStateException("Service was null");
-            }
-            
-            try {
-                service.remove(seller);
-                updateTableView();
-            } catch(DatabaseIntegrityException e){
-                AlertDialog.showAlert("Error removing seller", null, e.getMessage(), AlertType.ERROR);
-            }
-        }
-    }
-
     @Override
     public void onDataChanged() {
         updateTableView();
