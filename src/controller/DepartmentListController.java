@@ -24,13 +24,14 @@ import model.domain.Department;
 import model.service.DepartmentService;
 import util.AlertDialog;
 import util.Utils;
+import view.listener.DataChangeListener;
 
 /**
  * FXML Controller class
  *
  * @author joana
  */
-public class DepartmentListController implements Initializable {
+public class DepartmentListController implements Initializable, DataChangeListener {
     @FXML private TableView<Department> tableViewDepartment;
     @FXML private TableColumn<Department, Integer> tableColumnId;
     @FXML private TableColumn<Department, String> tableColumnName;
@@ -80,6 +81,7 @@ public class DepartmentListController implements Initializable {
             DepartmentFormController controller = loader.getController();
             controller.setDepartment(department);
             controller.setDepartmentService(new DepartmentService());
+            controller.subscriceDataChangeListener(this);
             controller.updateFormData();
 
             Stage dialogStage = new Stage();
@@ -92,5 +94,10 @@ public class DepartmentListController implements Initializable {
         } catch (IOException e) {
             AlertDialog.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
         }
+    }
+
+    @Override
+    public void onDataChanged() {
+        updateTableView();
     }
 }

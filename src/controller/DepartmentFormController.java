@@ -2,6 +2,8 @@ package controller;
 
 import exception.DatabaseException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -15,6 +17,7 @@ import model.service.DepartmentService;
 import util.AlertDialog;
 import util.Constraint;
 import util.Utils;
+import view.listener.DataChangeListener;
 
 /**
  * FXML Controller class
@@ -30,6 +33,7 @@ public class DepartmentFormController implements Initializable {
     
     private Department department;
     private DepartmentService service;
+    private List<DataChangeListener> dataChangeListeners = new ArrayList<>();
 
     public void setDepartment(Department department) {
         this.department = department;
@@ -37,6 +41,10 @@ public class DepartmentFormController implements Initializable {
     
     public void setDepartmentService(DepartmentService service) {
         this.service = service;
+    }
+    
+    public void subscriceDataChangeListener(DataChangeListener listener){
+        dataChangeListeners.add(listener);
     }
 
     @Override
@@ -61,6 +69,7 @@ public class DepartmentFormController implements Initializable {
         try {
             department = getFormData();
             service.saveOrUpdate(department);
+            notifyDataChangeListeners();
             Utils.currentStage(event).close();
         } catch(DatabaseException e){
             AlertDialog.showAlert("Error saving object", null, e.getMessage(), Alert.AlertType.ERROR);
@@ -85,5 +94,11 @@ public class DepartmentFormController implements Initializable {
         dep.setId(Utils.tryParseToInt(txtId.getText()));
         dep.setName(txtName.getText());
         return dep;
+    }
+    
+    private void notifyDataChangeListeners(){
+        for (DataChangeListener listener : dataChangeListeners){
+            listener.onDataChanged();
+        }
     }
 }
